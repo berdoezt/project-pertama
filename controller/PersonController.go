@@ -3,15 +3,20 @@ package controller
 import (
 	"net/http"
 	"project-pertama/model"
+	"project-pertama/repository"
+	"project-pertama/util"
 
 	"github.com/gin-gonic/gin"
 )
 
 type personController struct {
+	personRepository repository.IPersonRepository
 }
 
-func NewPersonController() *personController {
-	return &personController{}
+func NewPersonController(personRepository repository.IPersonRepository) *personController {
+	return &personController{
+		personRepository: personRepository,
+	}
 }
 
 func (pc *personController) Create(ctx *gin.Context) {
@@ -27,20 +32,22 @@ func (pc *personController) Create(ctx *gin.Context) {
 		return
 	}
 
-	model.Persons = append(model.Persons, newPerson)
-
-	var r model.Response = model.Response{
-		Success: true,
-		Data:    newPerson,
+	createdPerson, err := pc.personRepository.Create(newPerson)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, util.CreateResponse(false, nil, err.Error()))
+		return
 	}
-	ctx.JSON(http.StatusOK, r)
+
+	ctx.JSON(http.StatusOK, util.CreateResponse(true, createdPerson, ""))
 }
 
 func (pc *personController) GetAll(ctx *gin.Context) {
-	var r model.Response = model.Response{
-		Success: true,
-		Data:    model.Persons,
+
+	persons, err := pc.personRepository.GetAll()
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, util.CreateResponse(false, nil, err.Error()))
+		return
 	}
 
-	ctx.JSON(http.StatusOK, r)
+	ctx.JSON(http.StatusOK, util.CreateResponse(true, persons, ""))
 }
