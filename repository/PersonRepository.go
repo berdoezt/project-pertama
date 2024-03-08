@@ -1,48 +1,35 @@
 package repository
 
 import (
-	"database/sql"
-	"fmt"
 	"project-pertama/model"
+
+	"gorm.io/gorm"
 )
 
 type personRepository struct {
-	db *sql.DB
+	db *gorm.DB
 }
 
-func NewPersonRepository(db *sql.DB) *personRepository {
+func NewPersonRepository(db *gorm.DB) *personRepository {
 	return &personRepository{
 		db: db,
 	}
 }
 
 func (pr *personRepository) Create(newPerson model.Person) (model.Person, error) {
-	query := "insert into person(name, address) values($1, $2) returning *"
-
-	row := pr.db.QueryRow(query, newPerson.Name, newPerson.Address)
-	err := row.Scan(&newPerson.Id, &newPerson.Name, &newPerson.Address)
-	return newPerson, err
+	tx := pr.db.Create(&newPerson)
+	return newPerson, tx.Error
 }
 
 func (pr *personRepository) GetAll() ([]model.Person, error) {
 	var persons = []model.Person{}
 
-	query := "select * from person"
-	rows, err := pr.db.Query(query)
-	if err != nil {
-		return persons, err
-	}
+	tx := pr.db.Find(&persons)
+	return persons, tx.Error
+}
 
-	for rows.Next() {
-		var p model.Person
-		err := rows.Scan(&p.Id, &p.Name, &p.Address)
-		if err != nil {
-			fmt.Println(err)
-			continue
-		}
-
-		persons = append(persons, p)
-	}
-
-	return persons, nil
+func (pr *personRepository) Delete(uuid string) error {
+	// fmt.Println(uuid)
+	tx := pr.db.Unscoped().Delete(&model.Person{}, "uuid = ?", uuid)
+	return tx.Error
 }

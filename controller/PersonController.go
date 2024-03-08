@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"net/http"
 	"project-pertama/model"
 	"project-pertama/repository"
@@ -41,6 +42,15 @@ func (pc *personController) Create(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, util.CreateResponse(true, createdPerson, ""))
 }
 
+// GetAll Person godoc
+// @Summary Get All Person
+// @Schemes
+// @Description get all person
+// @Tags person
+// @Accept json
+// @Produce json
+// @Success 200 {object} []model.Person
+// @Router /person [get]
 func (pc *personController) GetAll(ctx *gin.Context) {
 
 	persons, err := pc.personRepository.GetAll()
@@ -50,4 +60,18 @@ func (pc *personController) GetAll(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, util.CreateResponse(true, persons, ""))
+}
+
+func (pc *personController) Delete(ctx *gin.Context) {
+
+	idString := ctx.Param("id")
+	fmt.Println(idString)
+
+	err := pc.personRepository.Delete(idString)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, util.CreateResponse(false, nil, err.Error()))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, util.CreateResponse(true, nil, ""))
 }
