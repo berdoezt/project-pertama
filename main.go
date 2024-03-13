@@ -3,6 +3,7 @@ package main
 import (
 	"project-pertama/controller"
 	"project-pertama/lib"
+	"project-pertama/middleware"
 	"project-pertama/model"
 	"project-pertama/repository"
 
@@ -39,7 +40,7 @@ func main() {
 		panic(err)
 	}
 
-	err = db.AutoMigrate(&model.Person{}, &model.CreditCard{})
+	err = db.AutoMigrate(&model.Person{}, &model.CreditCard{}, &model.User{})
 	if err != nil {
 		panic(err)
 	}
@@ -47,11 +48,18 @@ func main() {
 	personRepository := repository.NewPersonRepository(db)
 	personController := controller.NewPersonController(personRepository)
 
+	userRepository := repository.NewUserRepository(db)
+	userController := controller.NewUserController(userRepository)
+
 	ginEngine := gin.Default()
 
-	ginEngine.GET("/person", personController.GetAll)
-	ginEngine.POST("/person", personController.Create)
-	ginEngine.DELETE("/person/:id", personController.Delete)
+	ginEngine.POST("/users/register", userController.Register)
+	ginEngine.POST("/users/login", userController.Login)
+
+	personGroup := ginEngine.Group("/person", middleware.AuthMiddleware, middleware.AdminMiddleware)
+	personGroup.GET("", personController.GetAll)
+	personGroup.POST("", personController.Create)
+	personGroup.DELETE("/:id", personController.Delete)
 
 	ginEngine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
