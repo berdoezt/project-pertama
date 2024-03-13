@@ -18,7 +18,7 @@ func LogMiddleware(ctx *gin.Context) {
 func AuthMiddleware(ctx *gin.Context) {
 	authorizationValue := ctx.GetHeader("Authorization")
 	splittedValue := strings.Split(authorizationValue, "Bearer ")
-	if len(splittedValue) == 0 {
+	if len(splittedValue) <= 1 {
 		var r model.Response = model.Response{
 			Success: false,
 			Error:   "unauthorized",
