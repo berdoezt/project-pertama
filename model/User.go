@@ -10,6 +10,7 @@ type User struct {
 	Username  string `json:"username"`
 	Password  string `json:"password"`
 	IsAdmin   bool   `json:"is_admin"`
+	Orders    []Order
 	DeletedAt gorm.DeletedAt
 }
 

@@ -60,3 +60,18 @@ func GetJWTClaims(tokenString string) (map[string]any, error) {
 
 	return claims, nil
 }
+
+func GetSubFromClaims(claims any) (any, error) {
+
+	mapClaims, ok := claims.(map[string]any)
+	if !ok {
+		return nil, errors.New("not map")
+	}
+
+	sub, ok := mapClaims["sub"]
+	if !ok {
+		return nil, errors.New("not found")
+	}
+
+	return sub, nil
+}
