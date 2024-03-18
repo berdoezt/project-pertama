@@ -75,7 +75,7 @@ func main() {
 	ginEngine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
 	serverHost := os.Getenv("SERVER_HOST")
-	serverPort := os.Getenv("SERVER_PORT")
+	serverPort := os.Getenv("PORT")
 	port, err := strconv.Atoi(serverPort)
 	if err != nil {
 		panic(err)
