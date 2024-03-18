@@ -3,6 +3,7 @@ package test
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -11,49 +12,148 @@ import (
 	"project-pertama/repository/mocks"
 	"testing"
 
+	"github.com/bmizerany/assert"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
+type TestCase struct {
+	Name            string
+	Request         string
+	MockFunc        func()
+	ExpectedSuccess bool
+}
+
+// given
+// and
+// when
+// and
+// then
+
 func TestCreate(t *testing.T) {
-	var bodyString = `
-	{
-		"name": "saka",
-		"address": "suku air"
-	}
-	`
-
-	userId := uuid.NewString()
-
-	var newPerson model.Person
-
-	json.Unmarshal([]byte(bodyString), &newPerson)
 
 	personRepositoryMock := mocks.NewPersonRepositoryMock()
 
-	personRepositoryMock.On("Create", mock.Anything).Return(model.Person{
-		Name: "saka",
-		UUID: userId,
-	})
+	testCases := []TestCase{
+		TestCase{
+			Name: `
+			Given request body is valid
+			and person repository return some error
+			When create new person
+			Then should return error response
+			`,
+			Request: `
+			{
+				"name": "saka",
+				"address": "suku air"
+			}
+			`,
+			MockFunc: func() {
+				mockedPerson := model.Person{
+					Name: "saka",
+				}
+				personRepositoryMock.On("Create", mock.Anything).Return(mockedPerson, errors.New("some error"))
+			},
+			ExpectedSuccess: false,
+		},
+		TestCase{
+			Name: `
+			Given request body invalid
+			and person repository return some error
+			When create new person
+			Then should return error response of invalid json
+			`,
+			Request: `
+				asdf
+			`,
+			// MockFunc: func() {
+			// 	mockedPerson := model.Person{
+			// 		Name: "saka",
+			// 	}
+			// 	personRepositoryMock.On("Create", mock.Anything).Return(mockedPerson, errors.New("some error"))
+			// },
+			ExpectedSuccess: false,
+		},
 
-	personController := controller.NewPersonController(personRepositoryMock)
+		TestCase{
+			Name: `
+			Given request body invalid
+			and person repository return some error
+			When create new person
+			Then should return error response of invalid json
+			`,
+			Request: `
+			{
+				"name": "saka",
+				"address": "suku air"
+			}
+			`,
+			// MockFunc: func() {
+			// 	mockedPerson := model.Person{
+			// 		Name: "saka",
+			// 	}
+			// 	personRepositoryMock.On("Create", mock.Anything).Return(mockedPerson, errors.New("some error"))
+			// },
+			ExpectedSuccess: false,
+		},
+		TestCase{
+			Name: `
+			Given request body is valid
+			and person repository return success
+			When create new person
+			Then should return success response
+			`,
+			Request: `
+			{
+				"name": "saka",
+				"address": "suku air"
+			}
+			`,
+			MockFunc: func() {
+				mockedPerson := model.Person{
+					Name: "saka",
+				}
+				personRepositoryMock.On("Create", mock.Anything).Return(mockedPerson, nil)
+			},
+			ExpectedSuccess: true,
+		},
+	}
 
-	gin.SetMode(gin.TestMode)
+	for _, testCase := range testCases {
+		t.Run(testCase.Name, func(t *testing.T) {
+			gin.SetMode(gin.TestMode)
 
-	ginEngine := gin.Default()
-	ginEngine.POST("/person", personController.Create)
+			personController := controller.NewPersonController(personRepositoryMock)
+			testCase.MockFunc()
 
-	req, _ := http.NewRequest("POST", "/person", bytes.NewBuffer([]byte(bodyString)))
-	rr := httptest.NewRecorder()
+			ginEngine := gin.Default()
+			ginEngine.POST("/person", personController.Create)
 
-	ginEngine.ServeHTTP(rr, req)
+			req, _ := http.NewRequest("POST", "/person", bytes.NewBuffer([]byte(testCase.Request)))
+			rr := httptest.NewRecorder()
 
-	resultByte, _ := io.ReadAll(rr.Body)
-	var resultResponse model.Response
+			ginEngine.ServeHTTP(rr, req)
 
-	json.Unmarshal(resultByte, &resultResponse)
+			resultByte, _ := io.ReadAll(rr.Body)
+			var resultResponse model.Response
 
-	assert.Equal(t, true, resultResponse.Success)
+			json.Unmarshal(resultByte, &resultResponse)
+
+			assert.Equal(t, testCase.ExpectedSuccess, resultResponse.Success)
+		})
+	}
+
+	// var bodyString =
+
+	// userId := uuid.NewString()
+
+	// var newPerson model.Person
+
+	// json.Unmarshal([]byte(bodyString), &newPerson)
+
+	// mockedPerson := model.Person{
+	// 	Name: "saka",
+	// 	UUID: userId,
+	// }
+
 }

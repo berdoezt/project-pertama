@@ -3,7 +3,6 @@ package controller
 import (
 	"fmt"
 	"net/http"
-	"project-pertama/model"
 	"project-pertama/repository"
 	"project-pertama/util"
 
@@ -21,25 +20,25 @@ func NewPersonController(personRepository repository.IPersonRepository) *personC
 }
 
 func (pc *personController) Create(ctx *gin.Context) {
-	var newPerson model.Person
+	// var newPerson model.Person
 
-	err := ctx.ShouldBindJSON(&newPerson)
-	if err != nil {
-		var r model.Response = model.Response{
-			Success: false,
-			Error:   err.Error(),
-		}
-		ctx.AbortWithStatusJSON(http.StatusInternalServerError, r)
-		return
-	}
+	// err := ctx.ShouldBindJSON(&newPerson)
+	// if err != nil {
+	// 	var r model.Response = model.Response{
+	// 		Success: false,
+	// 		Error:   err.Error(),
+	// 	}
+	// 	ctx.AbortWithStatusJSON(http.StatusInternalServerError, r)
+	// 	return
+	// }
 
-	createdPerson, err := pc.personRepository.Create(newPerson)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, util.CreateResponse(false, nil, err.Error()))
-		return
-	}
+	// createdPerson, err := pc.personRepository.Create(newPerson)
+	// if err != nil {
+	// 	ctx.JSON(http.StatusInternalServerError, util.CreateResponse(false, nil, err.Error()))
+	// 	return
+	// }
 
-	ctx.JSON(http.StatusOK, util.CreateResponse(true, createdPerson, ""))
+	// ctx.JSON(http.StatusOK, util.CreateResponse(true, createdPerson, ""))
 }
 
 // GetAll Person godoc

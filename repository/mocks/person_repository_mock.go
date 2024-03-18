@@ -16,17 +16,20 @@ func NewPersonRepositoryMock() *personRepositoryMock {
 
 func (pr *personRepositoryMock) Create(newPerson model.Person) (model.Person, error) {
 
-	ret := pr.Called(newPerson)
+	r := pr.Called(newPerson)
 
-	if ret.Get(0) == nil {
-		return model.Person{}, nil
+	var r1 model.Person
+	var r2 error
+
+	if r.Get(0) != nil {
+		r1 = r.Get(0).(model.Person)
 	}
 
-	if ret.Get(1) == nil {
-		return model.Person{}, nil
+	if r.Get(1) != nil {
+		r2 = r.Get(1).(error)
 	}
 
-	return ret.Get(0).(model.Person), ret.Get(1).(error)
+	return r1, r2
 }
 
 func (pr *personRepositoryMock) GetAll() ([]model.Person, error) {
