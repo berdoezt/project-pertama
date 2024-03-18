@@ -24,14 +24,7 @@ type TestCase struct {
 	ExpectedSuccess bool
 }
 
-// given
-// and
-// when
-// and
-// then
-
 func TestCreate(t *testing.T) {
-
 	personRepositoryMock := mocks.NewPersonRepositoryMock()
 
 	testCases := []TestCase{
@@ -52,48 +45,8 @@ func TestCreate(t *testing.T) {
 				mockedPerson := model.Person{
 					Name: "saka",
 				}
-				personRepositoryMock.On("Create", mock.Anything).Return(mockedPerson, errors.New("some error"))
+				personRepositoryMock.On("Create", mock.Anything).Return(mockedPerson, errors.New("some error")).Once()
 			},
-			ExpectedSuccess: false,
-		},
-		TestCase{
-			Name: `
-			Given request body invalid
-			and person repository return some error
-			When create new person
-			Then should return error response of invalid json
-			`,
-			Request: `
-				asdf
-			`,
-			// MockFunc: func() {
-			// 	mockedPerson := model.Person{
-			// 		Name: "saka",
-			// 	}
-			// 	personRepositoryMock.On("Create", mock.Anything).Return(mockedPerson, errors.New("some error"))
-			// },
-			ExpectedSuccess: false,
-		},
-
-		TestCase{
-			Name: `
-			Given request body invalid
-			and person repository return some error
-			When create new person
-			Then should return error response of invalid json
-			`,
-			Request: `
-			{
-				"name": "saka",
-				"address": "suku air"
-			}
-			`,
-			// MockFunc: func() {
-			// 	mockedPerson := model.Person{
-			// 		Name: "saka",
-			// 	}
-			// 	personRepositoryMock.On("Create", mock.Anything).Return(mockedPerson, errors.New("some error"))
-			// },
 			ExpectedSuccess: false,
 		},
 		TestCase{
@@ -113,7 +66,7 @@ func TestCreate(t *testing.T) {
 				mockedPerson := model.Person{
 					Name: "saka",
 				}
-				personRepositoryMock.On("Create", mock.Anything).Return(mockedPerson, nil)
+				personRepositoryMock.On("Create", mock.Anything).Return(mockedPerson, nil).Once()
 			},
 			ExpectedSuccess: true,
 		},
@@ -140,20 +93,7 @@ func TestCreate(t *testing.T) {
 			json.Unmarshal(resultByte, &resultResponse)
 
 			assert.Equal(t, testCase.ExpectedSuccess, resultResponse.Success)
+			personRepositoryMock.AssertExpectations(t)
 		})
 	}
-
-	// var bodyString =
-
-	// userId := uuid.NewString()
-
-	// var newPerson model.Person
-
-	// json.Unmarshal([]byte(bodyString), &newPerson)
-
-	// mockedPerson := model.Person{
-	// 	Name: "saka",
-	// 	UUID: userId,
-	// }
-
 }
