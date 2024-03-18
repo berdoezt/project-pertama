@@ -1,11 +1,14 @@
 package main
 
 import (
+	"fmt"
+	"os"
 	"project-pertama/controller"
 	"project-pertama/lib"
 	"project-pertama/middleware"
 	"project-pertama/model"
 	"project-pertama/repository"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	swaggerfiles "github.com/swaggo/files"
@@ -71,7 +74,16 @@ func main() {
 
 	ginEngine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
-	err = ginEngine.Run("localhost:8082")
+	serverHost := os.Getenv("SERVER_HOST")
+	serverPort := os.Getenv("SERVER_PORT")
+	port, err := strconv.Atoi(serverPort)
+	if err != nil {
+		panic(err)
+	}
+
+	addr := fmt.Sprintf("%s:%d", serverHost, port)
+
+	err = ginEngine.Run(addr)
 	if err != nil {
 		panic(err)
 	}
